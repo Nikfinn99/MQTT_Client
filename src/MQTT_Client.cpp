@@ -61,23 +61,6 @@ MQTT_Client::MQTT_Client(WiFiClient &client, const std::string server_ip, uint16
 }
 
 //public
-MQTT_Client::~MQTT_Client()
-{ //cleanup, should not be necessary if created as global object
-  if (m_client)
-  {
-    m_client->disconnect();
-    delete m_client;
-  }
-
-  if (m_wificlient)
-  {
-    m_wificlient->stopAll();
-    m_wificlient->stop();
-    delete m_wificlient;
-  }
-}
-
-//public
 template <typename Generic>
 void MQTT_Client::mqttDebug(Generic text)
 {

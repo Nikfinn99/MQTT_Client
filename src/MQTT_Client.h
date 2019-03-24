@@ -23,7 +23,6 @@ public:
   MQTT_Client(PubSubClient &client, const std::string server_ip, uint16_t server_port = 1883, const std::string user = "", const std::string pw = "", const std::string client_id = "");
   MQTT_Client(const std::string server_ip, uint16_t server_port = 1883, const std::string user = "", const std::string pw = "", const std::string client_id = "");
   MQTT_Client(const std::string server_ip, const std::string user = "", const std::string pw = "", const std::string client_id = "");
-  ~MQTT_Client();
 
   void loop();
   bool publish(const std::string &sub_topic, const std::string &payload, bool retain = true);
