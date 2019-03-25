@@ -5,7 +5,6 @@
 #include <PubSubClient.h>
 #include <Client.h>
 #include <ESP8266WiFi.h>
-#include <string>
 
 class MQTT_Client
 {
@@ -17,20 +16,20 @@ public:
     MODE_SEND_RECEIVE
   };
 
-  typedef void (*mqtt_callback)(const std::string &, const std::string &, const std::string &);
+  typedef void (*mqtt_callback)(const String &, const String &, const String &);
 
-  MQTT_Client(WiFiClient &client, const std::string server_ip, uint16_t server_port = 1883, const std::string user = "", const std::string pw = "", const std::string client_id = "");
-  MQTT_Client(PubSubClient &client, const std::string server_ip, uint16_t server_port = 1883, const std::string user = "", const std::string pw = "", const std::string client_id = "");
-  MQTT_Client(const std::string server_ip, uint16_t server_port = 1883, const std::string user = "", const std::string pw = "", const std::string client_id = "");
-  MQTT_Client(const std::string server_ip, const std::string user = "", const std::string pw = "", const std::string client_id = "");
+  MQTT_Client(WiFiClient &client, const String server_ip, uint16_t server_port = 1883, const String user = "", const String pw = "", const String client_id = "");
+  MQTT_Client(PubSubClient &client, const String server_ip, uint16_t server_port = 1883, const String user = "", const String pw = "", const String client_id = "");
+  MQTT_Client(const String server_ip, uint16_t server_port = 1883, const String user = "", const String pw = "", const String client_id = "");
+  MQTT_Client(const String server_ip, const String user = "", const String pw = "", const String client_id = "");
 
   void loop();
-  bool publish(const std::string &sub_topic, const std::string &payload, bool retain = true);
+  bool publish(const String &sub_topic, const String &payload, bool retain = true);
   void setCallback(mqtt_callback callb);
-  void setTopic(const std::string &topic);
+  void setTopic(const String &topic);
   void setMode(Mode mode);
-  void setLastWill(const std::string &will_topic, const std::string &will_message);
-  void setInitPublish(const std::string &init_topic, const std::string &init_message);
+  void setLastWill(const String &will_topic, const String &will_message);
+  void setInitPublish(const String &init_topic, const String &init_message);
   void enableDebug(bool deb);
   bool reconnect();
   bool connected();
@@ -40,25 +39,25 @@ public:
 
 protected:
   void callback_func(const char *p_topic, byte *p_payload, unsigned int p_length);
-  void construct(const std::string &server_ip, const uint16_t server_port = 1883, const std::string &client_id = "");
+  void construct(const String &server_ip, const uint16_t server_port = 1883, const String &client_id = "");
 
   mqtt_callback m_callback = nullptr;
 
   WiFiClient *m_wificlient;
   PubSubClient *m_client;
 
-  std::string m_server_ip;
+  String m_server_ip;
   uint16_t m_server_port;
-  std::string m_client_id;
-  std::string m_pw;
-  std::string m_user;
+  String m_client_id;
+  String m_pw;
+  String m_user;
 
-  std::string m_cmnd_topic;
-  std::string m_stat_topic;
-  std::string m_will_topic;
-  std::string m_will_message;
-  std::string m_init_topic;
-  std::string m_init_message;
+  String m_cmnd_topic;
+  String m_stat_topic;
+  String m_will_topic;
+  String m_will_message;
+  String m_init_topic;
+  String m_init_message;
 
   long m_lastReconnectAttempt = 0;
   bool m_enable_debug = false;

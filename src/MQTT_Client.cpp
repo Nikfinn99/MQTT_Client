@@ -2,13 +2,13 @@
 #include <IO.h>
 
 //protected
-void MQTT_Client::construct(const std::string &server_ip, const uint16_t server_port, const std::string &client_id)
+void MQTT_Client::construct(const String &server_ip, const uint16_t server_port, const String &client_id)
 {
-  if (client_id.empty())
+  if (client_id.length() == 0)
   { //set client id if not specified by user
     char buf[20];
     itoa(ESP.getChipId(), buf, 16);
-    m_client_id = "ESP-" + std::string(buf);
+    m_client_id = "ESP-" + String(buf);
   }
   else
   {
@@ -22,7 +22,7 @@ void MQTT_Client::construct(const std::string &server_ip, const uint16_t server_
 }
 
 //public
-MQTT_Client::MQTT_Client(const std::string server_ip, const std::string user, const std::string pw, const std::string client_id)
+MQTT_Client::MQTT_Client(const String server_ip, const String user, const String pw, const String client_id)
     : m_pw(pw), m_user(user)
 {
   m_wificlient = new WiFiClient();
@@ -31,8 +31,8 @@ MQTT_Client::MQTT_Client(const std::string server_ip, const std::string user, co
 }
 
 //public
-MQTT_Client::MQTT_Client(const std::string server_ip, uint16_t server_port, const std::string user,
-                         const std::string pw, const std::string client_id)
+MQTT_Client::MQTT_Client(const String server_ip, uint16_t server_port, const String user,
+                         const String pw, const String client_id)
     : m_pw(pw), m_user(user)
 {
   m_wificlient = new WiFiClient();
@@ -41,8 +41,8 @@ MQTT_Client::MQTT_Client(const std::string server_ip, uint16_t server_port, cons
 }
 
 //public
-MQTT_Client::MQTT_Client(PubSubClient &client, const std::string server_ip, uint16_t server_port,
-                         const std::string user, const std::string pw, const std::string client_id)
+MQTT_Client::MQTT_Client(PubSubClient &client, const String server_ip, uint16_t server_port,
+                         const String user, const String pw, const String client_id)
     : m_pw(pw), m_user(user)
 {
   m_wificlient = nullptr;
@@ -51,8 +51,8 @@ MQTT_Client::MQTT_Client(PubSubClient &client, const std::string server_ip, uint
 }
 
 //public
-MQTT_Client::MQTT_Client(WiFiClient &client, const std::string server_ip, uint16_t server_port,
-                         const std::string user, const std::string pw, const std::string client_id)
+MQTT_Client::MQTT_Client(WiFiClient &client, const String server_ip, uint16_t server_port,
+                         const String user, const String pw, const String client_id)
     : m_pw(pw), m_user(user)
 {
   m_wificlient = &client;
@@ -138,7 +138,7 @@ void MQTT_Client::setCallback(mqtt_callback callb)
 }
 
 //public
-void MQTT_Client::setTopic(const std::string &topic)
+void MQTT_Client::setTopic(const String &topic)
 {
   //prepend 'stat' or 'cmnd' to respective topics
   m_stat_topic = ("stat/" + topic);
@@ -146,9 +146,9 @@ void MQTT_Client::setTopic(const std::string &topic)
 }
 
 //public
-void MQTT_Client::setLastWill(const std::string &will_topic, const std::string &will_message)
+void MQTT_Client::setLastWill(const String &will_topic, const String &will_message)
 {
-  std::string top = m_stat_topic;
+  String top = m_stat_topic;
   if (will_topic.length() > 0)
   {
     top += "/" + will_topic;
@@ -158,9 +158,9 @@ void MQTT_Client::setLastWill(const std::string &will_topic, const std::string &
 }
 
 //public
-void MQTT_Client::setInitPublish(const std::string &init_topic, const std::string &init_message)
+void MQTT_Client::setInitPublish(const String &init_topic, const String &init_message)
 {
-  std::string top = m_stat_topic;
+  String top = m_stat_topic;
   if (init_topic.length() > 0)
   {
     top += "/" + init_topic;
@@ -170,13 +170,13 @@ void MQTT_Client::setInitPublish(const std::string &init_topic, const std::strin
 }
 
 //public
-bool MQTT_Client::publish(const std::string &sub_topic, const std::string &payload, bool retain)
+bool MQTT_Client::publish(const String &sub_topic, const String &payload, bool retain)
 {
 
   if (m_mode != MODE_RECEIVE_ONLY)
   { //don't allow publishing in receive only mode
 
-    std::string top = m_stat_topic;
+    String top = m_stat_topic;
     if (sub_topic.length() > 0)
     {
       top += "/" + sub_topic;
@@ -240,24 +240,34 @@ bool MQTT_Client::reconnect()
 //protected
 void MQTT_Client::callback_func(const char *p_topic, uint8_t *p_payload, unsigned int p_length)
 {
-  if (p_length > 0)//only if we received a payload
+  if (p_length > 0) //only if we received a payload
   {
-    std::string topic(p_topic);
-    std::string payload((const char *)p_payload, p_length);
+    String topic(p_topic);
 
-    std::string sub_topic(topic);
-    size_t sub_index = topic.find_last_of('/');
-    if (sub_index != std::string::npos)
+    // copy to temporary char array to add null termination character
+    char *tmp_payload = new char[p_length + 1];
+    for (uint8_t i = 0; i < p_length; i++)
     {
-      sub_topic = sub_topic.substr(sub_index + 1); //extract target topic
+      tmp_payload[i] = p_payload[i];
     }
-    std::string rem_topic = topic.substr(0, sub_index);                  //remaining topic minus target
-    std::string dev_topic = rem_topic.substr(m_cmnd_topic.length() - 1); //extract device topic
+    tmp_payload[p_length] = '\0';
 
-    mqttDebug(topic.c_str());
-    mqttDebug(payload.c_str());
-    mqttDebug(dev_topic.c_str());
-    mqttDebug(sub_topic.c_str());
+    String payload(tmp_payload);
+    delete[] tmp_payload;
+
+    String sub_topic(topic);
+    int sub_index = topic.lastIndexOf('/');
+    if (sub_index > 0)
+    {
+      sub_topic = sub_topic.substring(sub_index + 1); //extract target topic
+    }
+    String rem_topic = topic.substring(0, sub_index);                  //remaining topic minus target
+    String dev_topic = rem_topic.substring(m_cmnd_topic.length() - 1); //extract device topic
+
+    mqttDebug(topic);
+    mqttDebug(payload);
+    mqttDebug(dev_topic);
+    mqttDebug(sub_topic);
 
     if (m_callback)
     { //callback set by user
