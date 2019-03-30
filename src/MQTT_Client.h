@@ -5,15 +5,24 @@
 #include <PubSubClient.h>
 #include <Client.h>
 #include <ESP8266WiFi.h>
+#include <SerialStream.h>
+
+#ifndef MQTT_MAX_RETRY
+#define MQTT_MAX_RETRY 10
+#endif
+
+#ifndef MQTT_RETRY_INTERVAL
+#define MQTT_RETRY_INTERVAL 10000
+#endif
 
 class MQTT_Client
 {
 public:
   enum Mode
   {
-    MODE_SEND_ONLY,
-    MODE_RECEIVE_ONLY,
-    MODE_SEND_RECEIVE
+    SEND_ONLY,
+    RECEIVE_ONLY,
+    SEND_RECEIVE
   };
 
   typedef void (*mqtt_callback)(const String &, const String &, const String &);
@@ -34,8 +43,13 @@ public:
   bool reconnect();
   bool connected();
 
+  // debug functions from one to three parameters
   template <typename Generic>
   void mqttDebug(Generic text);
+  template <typename Generic1, typename Generic2>
+  void MQTT_Client::mqttDebug(Generic1 text1, Generic2 text2);
+  template <typename Generic1, typename Generic2, typename Generic3>
+  void MQTT_Client::mqttDebug(Generic1 text1, Generic2 text2, Generic3 text3);
 
 protected:
   void callback_func(const char *p_topic, byte *p_payload, unsigned int p_length);
@@ -61,6 +75,7 @@ protected:
 
   long m_lastReconnectAttempt = 0;
   bool m_enable_debug = false;
+  uint8_t m_retry_count = 0;
 
   Mode m_mode;
 };
