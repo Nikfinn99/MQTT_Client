@@ -12,7 +12,7 @@
 #endif
 
 #ifndef MQTT_RETRY_INTERVAL
-#define MQTT_RETRY_INTERVAL 10000
+#define MQTT_RETRY_INTERVAL 10000U
 #endif
 
 class MQTT_Client
@@ -47,9 +47,9 @@ public:
   template <typename Generic>
   void mqttDebug(Generic text);
   template <typename Generic1, typename Generic2>
-  void MQTT_Client::mqttDebug(Generic1 text1, Generic2 text2);
+  void mqttDebug(Generic1 text1, Generic2 text2);
   template <typename Generic1, typename Generic2, typename Generic3>
-  void MQTT_Client::mqttDebug(Generic1 text1, Generic2 text2, Generic3 text3);
+  void mqttDebug(Generic1 text1, Generic2 text2, Generic3 text3);
 
 protected:
   void callback_func(const char *p_topic, byte *p_payload, unsigned int p_length);
@@ -73,7 +73,7 @@ protected:
   String m_init_topic;
   String m_init_message;
 
-  long m_lastReconnectAttempt = 0;
+  unsigned long m_lastReconnectAttempt = 0;
   bool m_enable_debug = false;
   uint8_t m_retry_count = 0;
 
