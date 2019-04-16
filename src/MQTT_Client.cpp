@@ -95,6 +95,18 @@ void MQTT_Client::mqttDebug(Generic1 text1, Generic2 text2, Generic3 text3)
 }
 
 //public
+void MQTT_Client::setMaxRetries(uint8_t max_retries)
+{
+  m_max_retries = max_retries;
+}
+
+//public
+void MQTT_Client::setRetryInterval(uint32_t retry_interval)
+{
+  m_retry_interval = retry_interval;
+}
+
+//public
 void MQTT_Client::enableDebug(bool deb)
 {
   m_enable_debug = deb;
@@ -107,7 +119,7 @@ void MQTT_Client::loop()
   if (!m_client->connected())
   {
     //reconnect non blocking
-    if (millis() > m_lastReconnectAttempt + MQTT_RETRY_INTERVAL || m_lastReconnectAttempt == 0)
+    if (millis() > m_lastReconnectAttempt + m_retry_interval || m_lastReconnectAttempt == 0)
     {
       // increase retry counter
       m_retry_count++;
@@ -116,7 +128,7 @@ void MQTT_Client::loop()
       if (!this->reconnect())
       {
         // restart if max retries has been reached
-        if (m_retry_count >= MQTT_MAX_RETRY)
+        if (m_retry_count >= m_max_retries)
         {
           ESP.restart();
           while (1)

@@ -8,11 +8,11 @@
 #include <SerialStream.h>
 
 #ifndef MQTT_MAX_RETRY
-#define MQTT_MAX_RETRY 10
+#define MQTT_MAX_RETRY 20
 #endif
 
 #ifndef MQTT_RETRY_INTERVAL
-#define MQTT_RETRY_INTERVAL 10000U
+#define MQTT_RETRY_INTERVAL 20000U
 #endif
 
 class MQTT_Client
@@ -40,6 +40,8 @@ public:
   void setLastWill(const String &will_topic, const String &will_message);
   void setInitPublish(const String &init_topic, const String &init_message);
   void enableDebug(bool deb);
+  void setMaxRetries(uint8_t max_retries);
+  void setRetryInterval(uint32_t retry_interval);
   bool reconnect();
   bool connected();
 
@@ -75,7 +77,10 @@ protected:
 
   unsigned long m_lastReconnectAttempt = 0;
   bool m_enable_debug = false;
+
   uint8_t m_retry_count = 0;
+  uint8_t m_max_retries = MQTT_MAX_RETRY;
+  uint32_t m_retry_interval = MQTT_RETRY_INTERVAL;
 
   Mode m_mode;
 };
