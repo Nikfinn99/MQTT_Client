@@ -22,7 +22,7 @@ void MQTT_Client::construct(const String &server_ip, const uint16_t server_port,
   m_client->setServer(m_server_ip.c_str(), m_server_port);
 
   // set mode to send and receive
-  this->setMode(SEND_RECEIVE);
+  this->setMode(MQTT_Mode::SEND_RECEIVE);
 }
 
 //public
@@ -158,17 +158,17 @@ bool MQTT_Client::connected()
 }
 
 //public
-void MQTT_Client::setMode(Mode mode)
+void MQTT_Client::setMode(MQTT_Mode mode)
 {
   m_mode = mode;
   switch (mode)
   {
-  case MQTT_Client::SEND_ONLY: //send only mode -> unsubscribe from everything and delete callback
+  case MQTT_Mode::SEND_ONLY: //send only mode -> unsubscribe from everything and delete callback
     m_client->unsubscribe(m_cmnd_topic.c_str());
     m_client->setCallback(nullptr);
     break;
-  case MQTT_Client::RECEIVE_ONLY: //receive only mode -> sub to cmnd topic
-  case MQTT_Client::SEND_RECEIVE: //receive and send commands
+  case MQTT_Mode::RECEIVE_ONLY: //receive only mode -> sub to cmnd topic
+  case MQTT_Mode::SEND_RECEIVE: //receive and send commands
     m_client->subscribe(m_cmnd_topic.c_str());
     m_client->setCallback([=](char *top, uint8_t *pay, unsigned int len) { this->callback_func(top, pay, len); });
     break;
@@ -220,7 +220,7 @@ void MQTT_Client::setInitPublish(const String &init_topic, const String &init_me
 bool MQTT_Client::publish(const String &sub_topic, const String &payload, bool retain)
 {
 
-  if (m_mode != RECEIVE_ONLY)
+  if (m_mode != MQTT_Mode::RECEIVE_ONLY)
   { //don't allow publishing in receive only mode
 
     String top = m_stat_topic;
@@ -265,8 +265,11 @@ bool MQTT_Client::reconnect()
     mqttDebug("connected");
 
     //resubscribe to cmnd topic
-    m_client->subscribe(m_cmnd_topic.c_str());
-    mqttDebug("Subscribing to", m_cmnd_topic);
+    if (m_mode != MQTT_Mode::SEND_ONLY)
+    {
+      m_client->subscribe(m_cmnd_topic.c_str());
+      mqttDebug("Subscribing to", m_cmnd_topic);
+    }
 
     //publish initial message
     if (m_init_topic.length() > 0 && m_init_message.length() > 0)

@@ -15,16 +15,16 @@
 #define MQTT_RETRY_INTERVAL 20000U
 #endif
 
+enum class MQTT_Mode
+{
+  SEND_ONLY,
+  RECEIVE_ONLY,
+  SEND_RECEIVE
+};
+
 class MQTT_Client
 {
 public:
-  enum Mode
-  {
-    SEND_ONLY,
-    RECEIVE_ONLY,
-    SEND_RECEIVE
-  };
-
   typedef void (*mqtt_callback)(const String &, const String &, const String &);
 
   MQTT_Client(WiFiClient &client, const String server_ip, uint16_t server_port = 1883, const String user = "", const String pw = "", const String client_id = "");
@@ -36,7 +36,7 @@ public:
   bool publish(const String &sub_topic, const String &payload, bool retain = true);
   void setCallback(mqtt_callback callb);
   void setTopic(const String &topic);
-  void setMode(Mode mode);
+  void setMode(MQTT_Mode mode);
   void setLastWill(const String &will_topic, const String &will_message);
   void setInitPublish(const String &init_topic, const String &init_message);
   void enableDebug(bool deb);
@@ -82,7 +82,7 @@ protected:
   uint8_t m_max_retries = MQTT_MAX_RETRY;
   uint32_t m_retry_interval = MQTT_RETRY_INTERVAL;
 
-  Mode m_mode;
+  MQTT_Mode m_mode;
 };
 
 #endif // MQTT_CLIENT_H
